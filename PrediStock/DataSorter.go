@@ -1,7 +1,3 @@
-// Copyright (c) 2013-2024 by Michael Dvorkin and contributors. All Rights Reserved.
-// Use of this source code is governed by a MIT-style license that can
-// be found in the LICENSE file.
-
 package mop
 
 import (
@@ -10,11 +6,8 @@ import (
 	"strings"
 )
 
-// Sorter gets called to sort stock quotes by one of the columns. The
-// setup is rather lengthy; there should probably be more concise way
-// that uses reflection and avoids hardcoding the column names.
 type Sorter struct {
-	profile *Profile // Pointer to where we store sort column and order.
+	profile *Profile
 }
 
 type sortable []Stock
@@ -161,16 +154,11 @@ func (list byPreOpenDesc) Less(i, j int) bool {
 func (list byAfterHoursDesc) Less(i, j int) bool {
 	return c(list.sortable[j].AfterHours) < c(list.sortable[i].AfterHours)
 }
-
-// Returns new Sorter struct.
 func NewSorter(profile *Profile) *Sorter {
 	return &Sorter{
 		profile: profile,
 	}
 }
-
-// SortByCurrentColumn builds a list of sort interface based on current sort
-// order, then calls sort.Sort to do the actual job.
 func (sorter *Sorter) SortByCurrentColumn(stocks []Stock) *Sorter {
 	var interfaces []sort.Interface
 
@@ -220,9 +208,6 @@ func (sorter *Sorter) SortByCurrentColumn(stocks []Stock) *Sorter {
 
 	return sorter
 }
-
-// The same exact method is used to sort by $Change and Change%. In both cases
-// we sort by the value of Change% so that multiple $0.00s get sorted properly.
 func c(str string) float32 {
 	c := "$"
 	for _, v := range currencies {
@@ -234,17 +219,12 @@ func c(str string) float32 {
 	value, _ := strconv.ParseFloat(trimmed, 32)
 	return float32(value)
 }
-
-// When sorting by the market value we must first convert 42B etc. notations
-// to proper numeric values.
 func m(str string) float32 {
 	if len(str) == 0 {
 		return 0
 	}
-
 	multiplier := 1.0
-
-	switch str[len(str)-1:] { // Check the last character.
+	switch str[len(str)-1:] {
 	case `T`:
 		multiplier = 1000000000000.0
 	case `B`:
@@ -254,9 +234,7 @@ func m(str string) float32 {
 	case `K`:
 		multiplier = 1000.0
 	}
-
-	trimmed := strings.Trim(str, ` $TBMK`) // Get rid of non-numeric characters.
+	trimmed := strings.Trim(str, ` $TBMK`)
 	value, _ := strconv.ParseFloat(trimmed, 32)
-
 	return float32(value * multiplier)
 }
