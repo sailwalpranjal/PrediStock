@@ -1,7 +1,3 @@
-// Copyright (c) 2013-2024 by Michael Dvorkin and contributors. All Rights Reserved.
-// Use of this source code is governed by a MIT-style license that can
-// be found in the LICENSE file.
-
 package mop
 
 import (
@@ -20,9 +16,6 @@ const defaultHeaderColor = "lightgray"
 const defaultTimeColor = "lightgray"
 const defaultColor = "lightgray"
 
-// Profile manages Mop program settings as defined by user (ex. list of
-// stock tickers). The settings are serialized using JSON and saved in
-// the ~/.moprc file.
 type Profile struct {
 	Tickers       []string // List of stock tickers to display.
 	MarketRefresh int      // Time interval to refresh market data.
@@ -40,13 +33,12 @@ type Profile struct {
 		Time    string
 		Default string
 	}
-	ShowTimestamp    bool                           // Show or hide current time in the top right of the screen
-	filterExpression *govaluate.EvaluableExpression // The filter as a govaluate expression
-	selectedColumn   int                            // Stores selected column number when the column editor is active.
-	filename         string                         // Path to the file in which the configuration is stored
+	ShowTimestamp    bool                          
+	filterExpression *govaluate.EvaluableExpression 
+	selectedColumn   int                           
+	filename         string                        
 }
 
-// Checks if a string represents a supported color or not.
 func IsSupportedColor(colorName string) bool {
 	switch colorName {
 	case
@@ -70,9 +62,6 @@ func IsSupportedColor(colorName string) bool {
 	}
 	return false
 }
-
-// Creates the profile and attempts to load the settings from ~/.moprc file.
-// If the file is not there it gets created with default values.
 func NewProfile(filename string) (*Profile, error) {
 	profile := &Profile{filename: filename}
 	data, err := ioutil.ReadFile(filename)
@@ -102,14 +91,14 @@ func NewProfile(filename string) (*Profile, error) {
 	return profile, err
 }
 
-// Initializes a profile with the default values
 func (profile *Profile) InitDefaultProfile() {
-	profile.MarketRefresh = 600 // Market data gets fetched every 600s (1 time per 5 minutes).
-	profile.QuotesRefresh = 600 // Stock quotes get updated every 600s (1 time per 5 minutes).
-	profile.Grouped = false     // Stock quotes are *not* grouped by advancing/declining.
+	// Set the refresh intervals to every 3 seconds
+	profile.MarketRefresh = 3 // Market data gets fetched every 3 seconds.
+	profile.QuotesRefresh = 3 // Stock quotes get updated every 3 seconds.
+	profile.Grouped = false
 	profile.Tickers = []string{`AAPL`, `C`, `GOOG`, `IBM`, `KO`, `ORCL`, `V`}
-	profile.SortColumn = 0   // Stock quotes are sorted by ticker name.
-	profile.Ascending = true // A to Z.
+	profile.SortColumn = 0 
+	profile.Ascending = true 
 	profile.Filter = ""
 	profile.UpDownJump = 10
 	profile.Colors.Gain = defaultGainColor
@@ -121,17 +110,12 @@ func (profile *Profile) InitDefaultProfile() {
 	profile.ShowTimestamp = false
 	profile.Save()
 }
-
-// Initializes a color to the given string, or to the default value if the given
-// string does not represent a supported color.
 func InitColor(color *string, defaultValue string) {
 	*color = strings.ToLower(*color)
 	if !IsSupportedColor(*color) {
 		*color = defaultValue
 	}
 }
-
-// Save serializes settings using JSON and saves them in ~/.moprc file.
 func (profile *Profile) Save() error {
 	data, err := json.MarshalIndent(profile, "", "    ")
 	if err != nil {
@@ -140,20 +124,12 @@ func (profile *Profile) Save() error {
 
 	return ioutil.WriteFile(profile.filename, data, 0644)
 }
-
-// AddTickers updates the list of existing tickers to add the new ones making
-// sure there are no duplicates.
 func (profile *Profile) AddTickers(tickers []string) (added int, err error) {
 	added, err = 0, nil
 	existing := make(map[string]bool)
-
-	// Build a hash of existing tickers so we could look it up quickly.
 	for _, ticker := range profile.Tickers {
 		existing[ticker] = true
 	}
-
-	// Iterate over the list of new tickers excluding the ones that
-	// already exist.
 	for _, ticker := range tickers {
 		if _, found := existing[ticker]; !found {
 			profile.Tickers = append(profile.Tickers, ticker)
@@ -168,14 +144,11 @@ func (profile *Profile) AddTickers(tickers []string) (added int, err error) {
 
 	return
 }
-
-// RemoveTickers removes requested stock tickers from the list we track.
 func (profile *Profile) RemoveTickers(tickers []string) (removed int, err error) {
 	removed, err = 0, nil
 	for _, ticker := range tickers {
 		for i, existing := range profile.Tickers {
 			if ticker == existing {
-				// Requested ticker is there: remove i-th slice item.
 				profile.Tickers = append(profile.Tickers[:i], profile.Tickers[i+1:]...)
 				removed++
 			}
@@ -188,26 +161,18 @@ func (profile *Profile) RemoveTickers(tickers []string) (removed int, err error)
 
 	return
 }
-
-// Reorder gets called by the column editor to either reverse sorting order
-// for the current column, or to pick another sort column.
 func (profile *Profile) Reorder() error {
 	if profile.selectedColumn == profile.SortColumn {
-		profile.Ascending = !profile.Ascending // Reverse sort order.
+		profile.Ascending = !profile.Ascending 
 	} else {
-		profile.SortColumn = profile.selectedColumn // Pick new sort column.
+		profile.SortColumn = profile.selectedColumn 
 	}
 	return profile.Save()
 }
-
-// Regroup flips the flag that controls whether the stock quotes are grouped
-// by advancing/declining issues.
 func (profile *Profile) Regroup() error {
 	profile.Grouped = !profile.Grouped
 	return profile.Save()
 }
-
-// SetFilter creates a govaluate.EvaluableExpression.
 func (profile *Profile) SetFilter(filter string) {
 	if len(filter) > 0 {
 		var err error
