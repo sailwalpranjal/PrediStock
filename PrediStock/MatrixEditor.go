@@ -1,23 +1,14 @@
-// Copyright (c) 2013-2024 by Michael Dvorkin and contributors. All Rights Reserved.
-// Use of this source code is governed by a MIT-style license that can
-// be found in the LICENSE file.
-
 package mop
 
 import "github.com/nsf/termbox-go"
 
-// ColumnEditor handles column sort order. When activated it highlights
-// current column name in the header, then waits for arrow keys (choose
-// another column), Enter (reverse sort order), or Esc (exit).
 type ColumnEditor struct {
-	screen  *Screen  // Pointer to Screen so we could use screen.Draw().
-	quotes  *Quotes  // Pointer to Quotes to redraw them when the sort order changes.
-	layout  *Layout  // Pointer to Layout to redraw stock quotes header.
-	profile *Profile // Pointer to Profile where we save newly selected sort order.
+	screen  *Screen
+	quotes  *Quotes
+	layout  *Layout
+	profile *Profile
 }
 
-// Returns new initialized ColumnEditor struct. As part of initialization it
-// highlights current column name (as stored in Profile).
 func NewColumnEditor(screen *Screen, quotes *Quotes) *ColumnEditor {
 	editor := &ColumnEditor{
 		screen:  screen,
@@ -30,9 +21,6 @@ func NewColumnEditor(screen *Screen, quotes *Quotes) *ColumnEditor {
 
 	return editor
 }
-
-// Handle takes over the keyboard events and dispatches them to appropriate
-// column editor handlers. It returns true when user presses Esc.
 func (editor *ColumnEditor) Handle(event termbox.Event) bool {
 	defer editor.redrawHeader()
 
@@ -52,14 +40,12 @@ func (editor *ColumnEditor) Handle(event termbox.Event) bool {
 
 	return false
 }
-
 //-----------------------------------------------------------------------------
 func (editor *ColumnEditor) selectCurrentColumn() *ColumnEditor {
 	editor.profile.selectedColumn = editor.profile.SortColumn
 	editor.redrawHeader()
 	return editor
 }
-
 //-----------------------------------------------------------------------------
 func (editor *ColumnEditor) selectLeftColumn() *ColumnEditor {
 	editor.profile.selectedColumn--
@@ -68,7 +54,6 @@ func (editor *ColumnEditor) selectLeftColumn() *ColumnEditor {
 	}
 	return editor
 }
-
 //-----------------------------------------------------------------------------
 func (editor *ColumnEditor) selectRightColumn() *ColumnEditor {
 	editor.profile.selectedColumn++
@@ -77,7 +62,6 @@ func (editor *ColumnEditor) selectRightColumn() *ColumnEditor {
 	}
 	return editor
 }
-
 //-----------------------------------------------------------------------------
 func (editor *ColumnEditor) execute() *ColumnEditor {
 	if editor.profile.Reorder() == nil {
@@ -86,13 +70,11 @@ func (editor *ColumnEditor) execute() *ColumnEditor {
 
 	return editor
 }
-
 //-----------------------------------------------------------------------------
 func (editor *ColumnEditor) done() bool {
 	editor.profile.selectedColumn = -1
 	return true
 }
-
 //-----------------------------------------------------------------------------
 func (editor *ColumnEditor) redrawHeader() {
 	editor.screen.DrawLine(0, 4, editor.layout.Header(editor.profile))
