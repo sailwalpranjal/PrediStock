@@ -1,7 +1,3 @@
-// Copyright (c) 2013-2024 by Michael Dvorkin and contributors. All Rights Reserved.
-// Use of this source code is governed by a MIT-style license that can
-// be found in the LICENSE file.
-
 package mop
 
 import (
@@ -24,28 +20,20 @@ var currencies = map[string]string{
 	"EUR": "€",
 	"JPY": "¥",
 }
-
-// Column describes formatting rules for individual column within the list
-// of stock quotes.
 type Column struct {
-	width     int                    // Column width.
-	name      string                 // The name of the field in the Stock struct.
-	title     string                 // Column title to display in the header.
-	formatter func(...string) string // Optional function to format the contents of the column.
+	width     int                   
+	name      string                 
+	title     string              
+	formatter func(...string) string
 }
-
-// Layout is used to format and display all the collected data, i.e. market
-// updates and the list of stock quotes.
 type Layout struct {
-	columns        []Column           // List of stock quotes columns.
-	sorter         *Sorter            // Pointer to sorting receiver.
-	filter         *Filter            // Pointer to filtering receiver.
-	regex          *regexp.Regexp     // Pointer to regular expression to align decimal points.
-	marketTemplate *template.Template // Pointer to template to format market data.
-	quotesTemplate *template.Template // Pointer to template to format the list of stock quotes.
+	columns        []Column         
+	sorter         *Sorter           
+	filter         *Filter          
+	regex          *regexp.Regexp   
+	marketTemplate *template.Template 
+	quotesTemplate *template.Template
 }
-
-// Creates the layout and assigns the default values that stay unchanged.
 func NewLayout() *Layout {
 	layout := &Layout{}
 	layout.columns = []Column{
@@ -73,12 +61,9 @@ func NewLayout() *Layout {
 
 	return layout
 }
-
-// Market merges given market data structure with the market template and
-// returns formatted string that includes highlighting markup.
 func (layout *Layout) Market(market *Market) string {
-	if ok, err := market.Ok(); !ok { // If there was an error fetching market data...
-		return err // then simply return the error string.
+	if ok, err := market.Ok(); !ok { 
+		return err 
 	}
 
 	highlight(market.Dow, market.Sp500, market.Nasdaq,
@@ -90,19 +75,17 @@ func (layout *Layout) Market(market *Market) string {
 	return buffer.String()
 }
 
-// Quotes uses quotes template to format timestamp, stock quotes header,
-// and the list of given stock quotes. It returns formatted string with
-// all the necessary markup.
+
 func (layout *Layout) Quotes(quotes *Quotes) string {
 	zonename, _ := time.Now().In(time.Local).Zone()
-	if ok, err := quotes.Ok(); !ok { // If there was an error fetching stock quotes...
-		return err // then simply return the error string.
+	if ok, err := quotes.Ok(); !ok { 
+		return err 
 	}
 
 	vars := struct {
-		Now    string  // Current timestamp.
-		Header string  // Formatted header line.
-		Stocks []Stock // List of formatted stock quotes.
+		Now    string  
+		Header string 
+		Stocks []Stock
 	}{
 		time.Now().Format(`3:04:05pm ` + zonename),
 		layout.Header(quotes.profile),
@@ -114,11 +97,6 @@ func (layout *Layout) Quotes(quotes *Quotes) string {
 
 	return buffer.String()
 }
-
-// Header iterates over column titles and formats the header line. The
-// formatting includes placing an arrow next to the sorted column title.
-// When the column editor is active it knows how to highlight currently
-// selected column title.
 func (layout *Layout) Header(profile *Profile) string {
 	str, selectedColumn := ``, profile.selectedColumn
 
@@ -133,9 +111,6 @@ func (layout *Layout) Header(profile *Profile) string {
 
 	return `<u>` + str + `</u>`
 }
-
-// TotalColumns is the utility method for the column editor that returns
-// total number of columns.
 func (layout *Layout) TotalColumns() int {
 	return len(layout.columns)
 }
@@ -143,11 +118,6 @@ func (layout *Layout) TotalColumns() int {
 // -----------------------------------------------------------------------------
 func (layout *Layout) prettify(quotes *Quotes) []Stock {
 	pretty := make([]Stock, len(quotes.stocks))
-
-	//
-	// Iterate over the list of stocks to get the longest ticker name (some tickers will exceed the allotted 10 char length for the Ticker column)
-	// Save the longest ticker length and use max(longestlength, column.width) later in the second loop to keep the ticker indentations consistent
-	//
 	tickerWidth := 0
 	for _, stock := range quotes.stocks {
 		value := reflect.ValueOf(&stock).Elem().FieldByName(`Ticker`).String()
@@ -156,26 +126,13 @@ func (layout *Layout) prettify(quotes *Quotes) []Stock {
 			tickerWidth = currentLength
 		}
 	}
-
-	//
-	// Iterate over the list of stocks and properly format all its columns.
-	//
 	for i, stock := range quotes.stocks {
 		pretty[i].Direction = stock.Direction
-		//
-		// Iterate over the list of stock columns. For each column name:
-		// - Get current column value.
-		// - If the column has the formatter method then call it.
-		// - Set the column value padding it to the given width.
-		//
 		for _, column := range layout.columns {
-			// ex. value = stock.Change
 			value := reflect.ValueOf(&stock).Elem().FieldByName(column.name).String()
 			if column.formatter != nil {
-				// ex. value = currency(value)
 				value = column.formatter(value, stock.Currency)
 			}
-			// ex. pretty[i].Change = layout.pad(value, 10)
 			if column.name == `Ticker` && (0-tickerWidth) < column.width {
 				column.width = (0 - tickerWidth)
 			}
@@ -185,23 +142,19 @@ func (layout *Layout) prettify(quotes *Quotes) []Stock {
 
 	profile := quotes.profile
 
-	if profile.Filter != "" { // Fix for blank display if invalid filter expression was cleared.
+	if profile.Filter != "" { 
 		if profile.filterExpression != nil {
-			if layout.filter == nil { // Initialize filter on first invocation.
+			if layout.filter == nil { 
 				layout.filter = NewFilter(profile)
 			}
 			pretty = layout.filter.Apply(pretty)
 		}
 	}
 
-	if layout.sorter == nil { // Initialize sorter on first invocation.
+	if layout.sorter == nil { 
 		layout.sorter = NewSorter(profile)
 	}
 	layout.sorter.SortByCurrentColumn(pretty)
-	//
-	// Group stocks by advancing/declining unless sorted by Chanage or Change%
-	// in which case the grouping has been done already.
-	//
 	if profile.Grouped && (profile.SortColumn < 2 || profile.SortColumn > 3) {
 		pretty = group(pretty)
 	}
@@ -337,7 +290,6 @@ func currency(str ...string) string {
 	if len(str) < 2 {
 		return "ERR"
 	}
-	//default to $
 	symbol := "$"
 	c, ok := currencies[str[1]]
 	if ok {
@@ -352,8 +304,6 @@ func currency(str ...string) string {
 
 	return symbol + str[0]
 }
-
-// Returns percent value truncated at 2 decimal points.
 // -----------------------------------------------------------------------------
 func percent(str ...string) string {
 	if len(str) < 1 {
@@ -377,7 +327,6 @@ func percent(str ...string) string {
 	return str[0]
 }
 
-// Returns value as integer (no trailing digits after a '.').
 // -----------------------------------------------------------------------------
 func integer(str ...string) string {
 	if len(str) < 1 {
@@ -386,8 +335,6 @@ func integer(str ...string) string {
 	if str[0] == `N/A` || len(str[0]) == 0 {
 		return `-`
 	}
-
-	// Don't strip after the '.' if we have a value such as 123.45M
 	if unicode.IsDigit(rune(str[0][len(str[0])-1])) {
 		split := strings.Split(str[0], ".")
 		if len(split) == 2 {
