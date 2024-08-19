@@ -1,7 +1,3 @@
-// Copyright (c) 2013-2024 by Michael Dvorkin and contributors. All Rights Reserved.
-// Use of this source code is governed by a MIT-style license that can
-// be found in the LICENSE file.
-
 package mop
 
 import (
@@ -58,8 +54,6 @@ func fetchCookies() string {
 
 	client := http.Client{}
 	var cookies []*http.Cookie
-
-	// Get the session ID from the first request
 	request, err := http.NewRequest("GET", cookieURL, nil)
 	if err != nil {
 		panic(err)
@@ -88,9 +82,6 @@ func fetchCookies() string {
 	if cookieA1 != "" {
 		return cookieA1
 	}
-
-	// first pass failed - try EU shenanigans
-
 	sessionRegex := regexp.MustCompile("sessionId=(?:([A-Za-z0-9_-]*))")
 	sessionID := sessionRegex.FindStringSubmatch(response.Request.URL.RawQuery)[1]
 
@@ -107,8 +98,6 @@ func fetchCookies() string {
 	if len(gucsCookie) == 0 {
 		panic(err)
 	}
-
-	// Create a new request to agree to the EU consent request
 	form := url.Values{}
 	form.Add("csrfToken", csrfToken)
 	form.Add("sessionId", sessionID)
@@ -146,8 +135,6 @@ func fetchCookies() string {
 		panic(err)
 	}
 	defer response2.Body.Close()
-
-	// redirect festival
 	cookies = response2.Request.Response.Request.Response.Request.Response.Cookies()
 	cookieA1 = getA1Cookie(cookies)
 	if cookieA1 != "" {
