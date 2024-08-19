@@ -1,7 +1,3 @@
-// Copyright (c) 2013-2023 by Michael Dvorkin and contributors. All Rights Reserved.
-// Use of this source code is governed by a MIT-style license that can
-// be found in the LICENSE file.
-
 package mop
 
 import (
@@ -17,13 +13,10 @@ import (
 
 const quotesURL = `https://query1.finance.yahoo.com/v7/finance/quote?crumb=%s&symbols=%s`
 
-// const quotesURLv7QueryParts = `&range=1d&interval=5m&indicators=close&includeTimestamps=false&includePrePost=false&corsDomain=finance.yahoo.com&.tsrc=finance`
 const quotesURLQueryParts = `&range=1d&interval=5m&indicators=close&includeTimestamps=false&includePrePost=false&corsDomain=finance.yahoo.com&.tsrc=finance`
 
 const noDataIndicator = `N/A`
 
-// Stock stores quote information for the particular stock ticker. The data
-// for all the fields except 'Direction' is fetched using Yahoo market API.
 type Stock struct {
 	Ticker     string `json:"symbol"`                      // Stock ticker.
 	LastTrade  string `json:"regularMarketPrice"`          // l1: last trade.
@@ -48,8 +41,6 @@ type Stock struct {
 	AfterHours string `json:"postMarketChangePercent,omitempty"`
 }
 
-// Quotes stores relevant pointers as well as the array of stock quotes for
-// the tickers we are tracking.
 type Quotes struct {
 	market  *Market  // Pointer to Market.
 	profile *Profile // Pointer to Profile.
@@ -57,7 +48,6 @@ type Quotes struct {
 	errors  string   // Error string if any.
 }
 
-// Sets the initial values and returns new Quotes struct.
 func NewQuotes(market *Market, profile *Profile) *Quotes {
 	return &Quotes{
 		market:  market,
@@ -66,10 +56,8 @@ func NewQuotes(market *Market, profile *Profile) *Quotes {
 	}
 }
 
-// Fetch the latest stock quotes and parse raw fetched data into array of
-// []Stock structs.
 func (quotes *Quotes) Fetch() (self *Quotes) {
-	self = quotes // <-- This ensures we return correct quotes after recover() from panic().
+	self = quotes
 	if quotes.isReady() {
 		defer func() {
 			if err := recover(); err != nil {
@@ -104,7 +92,6 @@ func (quotes *Quotes) Fetch() (self *Quotes) {
 		}
 
 		response, err := client.Do(request)
-		// response, err := http.Get(url + quotesURLQueryParts)
 		if err != nil {
 			panic(err)
 		}
@@ -120,47 +107,25 @@ func (quotes *Quotes) Fetch() (self *Quotes) {
 
 	return quotes
 }
-
-// Ok returns two values: 1) boolean indicating whether the error has occurred,
-// and 2) the error text itself.
 func (quotes *Quotes) Ok() (bool, string) {
 	return quotes.errors == ``, quotes.errors
 }
-
-// AddTickers saves the list of tickers and refreshes the stock data if new
-// tickers have been added. The function gets called from the line editor
-// when user adds new stock tickers.
 func (quotes *Quotes) AddTickers(tickers []string) (added int, err error) {
 	if added, err = quotes.profile.AddTickers(tickers); err == nil && added > 0 {
-		quotes.stocks = nil // Force fetch.
+		quotes.stocks = nil
 	}
 	return
 }
-
-// RemoveTickers saves the list of tickers and refreshes the stock data if some
-// tickers have been removed. The function gets called from the line editor
-// when user removes existing stock tickers.
 func (quotes *Quotes) RemoveTickers(tickers []string) (removed int, err error) {
 	if removed, err = quotes.profile.RemoveTickers(tickers); err == nil && removed > 0 {
-		quotes.stocks = nil // Force fetch.
+		quotes.stocks = nil
 	}
 	return
 }
-
-// isReady returns true if we haven't fetched the quotes yet *or* the stock
-// market is still open and we might want to grab the latest quotes. In both
-// cases we make sure the list of requested tickers is not empty.
 func (quotes *Quotes) isReady() bool {
 	return (quotes.stocks == nil || !quotes.market.IsClosed) && len(quotes.profile.Tickers) > 0
 }
-
-// this will parse the json objects
 func (quotes *Quotes) parse2(body []byte) (*Quotes, error) {
-	// response -> quoteResponse -> result|error (array) -> map[string]interface{}
-	// Stocks has non-int things
-	// d := map[string]map[string][]Stock{}
-	// some of these are numbers vs strings
-	// d := map[string]map[string][]map[string]string{}
 	d := map[string]map[string][]map[string]interface{}{}
 	err := json.Unmarshal(body, &d)
 	if err != nil {
@@ -180,7 +145,6 @@ func (quotes *Quotes) parse2(body []byte) (*Quotes, error) {
 			default:
 				result[k] = fmt.Sprintf("%v", v)
 			}
-
 		}
 		quotes.stocks[i].Ticker = result["symbol"]
 		quotes.stocks[i].LastTrade = result["regularMarketPrice"]
@@ -194,24 +158,14 @@ func (quotes *Quotes) parse2(body []byte) (*Quotes, error) {
 		quotes.stocks[i].Volume = result["regularMarketVolume"]
 		quotes.stocks[i].AvgVolume = result["averageDailyVolume10Day"]
 		quotes.stocks[i].PeRatio = result["trailingPE"]
-		// TODO calculate rt
 		quotes.stocks[i].PeRatioX = result["trailingPE"]
 		quotes.stocks[i].Dividend = result["trailingAnnualDividendRate"]
 		quotes.stocks[i].Yield = result["trailingAnnualDividendYield"]
 		quotes.stocks[i].MarketCap = result["marketCap"]
-		// TODO calculate rt?
 		quotes.stocks[i].MarketCapX = result["marketCap"]
 		quotes.stocks[i].Currency = result["currency"]
 		quotes.stocks[i].PreOpen = result["preMarketChangePercent"]
 		quotes.stocks[i].AfterHours = result["postMarketChangePercent"]
-		/*
-			fmt.Println(i)
-			fmt.Println("-------------------")
-			for k, v := range result {
-				fmt.Println(k, v)
-			}
-			fmt.Println("-------------------")
-		*/
 		adv, err := strconv.ParseFloat(quotes.stocks[i].Change, 64)
 		quotes.stocks[i].Direction = 0
 		if err == nil {
@@ -224,40 +178,21 @@ func (quotes *Quotes) parse2(body []byte) (*Quotes, error) {
 	}
 	return quotes, nil
 }
-
-// Use reflection to parse and assign the quotes data fetched using the Yahoo
-// market API.
 func (quotes *Quotes) parse(body []byte) *Quotes {
 	lines := bytes.Split(body, []byte{'\n'})
 	quotes.stocks = make([]Stock, len(lines))
-	//
-	// Get the total number of fields in the Stock struct. Skip the last
-	// Advancing field which is not fetched.
-	//
 	fieldsCount := reflect.ValueOf(quotes.stocks[0]).NumField() - 1
-	//
-	// Split each line into columns, then iterate over the Stock struct
-	// fields to assign column values.
-	//
 	for i, line := range lines {
 		columns := bytes.Split(bytes.TrimSpace(line), []byte{','})
 		for j := 0; j < fieldsCount; j++ {
-			// ex. quotes.stocks[i].Ticker = string(columns[0])
 			reflect.ValueOf(&quotes.stocks[i]).Elem().Field(j).SetString(string(columns[j]))
 		}
-		//
-		// Try realtime value and revert to the last known if the
-		// realtime is not available.
-		//
 		if quotes.stocks[i].PeRatio == `N/A` && quotes.stocks[i].PeRatioX != `N/A` {
 			quotes.stocks[i].PeRatio = quotes.stocks[i].PeRatioX
 		}
 		if quotes.stocks[i].MarketCap == `N/A` && quotes.stocks[i].MarketCapX != `N/A` {
 			quotes.stocks[i].MarketCap = quotes.stocks[i].MarketCapX
 		}
-		//
-		// Get the direction of the stock
-		//
 		adv, err := strconv.ParseFloat(quotes.stocks[i].Change, 64)
 		quotes.stocks[i].Direction = 0
 		if err == nil {
@@ -295,6 +230,5 @@ func float2Str(v float64) string {
 	default:
 		unit = ""
 	}
-	// parse
 	return fmt.Sprintf("%0.3f%s", v, unit)
 }
