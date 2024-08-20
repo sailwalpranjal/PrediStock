@@ -36,9 +36,6 @@ The architecture of PrediStock is designed to be modular and scalable, consistin
 - **Prediction Layer:** Implements machine learning models to predict stock prices.
 - **Output Layer:** Displays the results in a user-friendly format, such as graphs or tables.
 
-### Architecture Diagram
-*(Placeholder for an architecture diagram, to be added when finalized)*
-
 ## Installation
 
 To install and set up PrediStock, follow these steps:
@@ -104,6 +101,7 @@ After predictions are made, the results are presented in a clear and comprehensi
 - **Graphical Representation:** Provides charts and graphs for easy interpretation.
 - **Anomaly Detection:** Flags any unusual trends that might require further investigation.
 - **Export Options:** Allows users to export results in various formats (e.g., CSV, PDF).
+- **Real-Time Data Processing:** Integrate real-time data feeds for live prediction.
 
 ## Key Code Snippets
 
@@ -256,7 +254,6 @@ While PrediStock is functional, several enhancements can be made:
 
 - **Algorithm Optimization:** Implement more sophisticated algorithms like LSTM for time series prediction.
 - **User Interface:** Develop a graphical user interface (GUI) for easier interaction.
-- **Real-Time Data Processing:** Integrate real-time data feeds for live prediction.
 - **Custom Alerts:** Allow users to set custom alerts based on specific criteria.
 
 ## License
