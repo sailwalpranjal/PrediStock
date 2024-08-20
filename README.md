@@ -48,6 +48,7 @@ To start the application, simply run:
 
 ## Build and Run PrediStock
 
+[![Watch the video](https://github.com/sailwalpranjal/PrediStock/blob/main/Building%20and%20Running%20PrediStock/Thumbnail.png)](https://github.com/sailwalpranjal/PrediStock/blob/main/Building%20and%20Running%20PrediStock/Building%20and%20Running%20PrediStock.mp4)
 
 ## Troubleshooting
 
