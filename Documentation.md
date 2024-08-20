@@ -20,7 +20,6 @@
     - [Preprocessing Pipeline](#preprocessing-pipeline)
     - [Model Implementation](#model-implementation)
 7. [Error Handling and Logging](#error-handling-and-logging)
-8. [Testing](#testing)
 9. [Future Enhancements](#future-enhancements)
 10. [License](#license)
 
@@ -55,11 +54,6 @@ To install and set up PrediStock, follow these steps:
 3. Install dependencies:
    ```bash
    go get ./...
-   ```
-4. Ensure that all environment variables required by the project are set:
-   ```bash
-   export API_KEY=your_api_key
-   export DB_CONNECTION_STRING=your_database_connection_string
    ```
 
 ## Build and Run
