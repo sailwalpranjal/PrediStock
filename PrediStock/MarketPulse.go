@@ -1,7 +1,3 @@
-// Copyright (c) 2013-2023 by Michael Dvorkin and contributors. All Rights Reserved.
-// Use of this source code is governed by a MIT-style license that can
-// be found in the LICENSE file.
-
 package mop
 
 import (
@@ -14,13 +10,11 @@ import (
 const marketURL = `https://query1.finance.yahoo.com/v7/finance/quote?crumb=%s&symbols=%s`
 const marketURLQueryParts = `&range=1d&interval=5m&indicators=close&includeTimestamps=false&includePrePost=false&corsDomain=finance.yahoo.com&.tsrc=finance`
 
-// Market stores current market information displayed in the top three lines of
-// the screen. The market data is fetched and parsed from the HTML page above.
 type Market struct {
-	IsClosed  bool              // True when U.S. markets are closed.
-	Dow       map[string]string // Hash of Dow Jones indicators.
-	Nasdaq    map[string]string // Hash of NASDAQ indicators.
-	Sp500     map[string]string // Hash of S&P 500 indicators.
+	IsClosed  bool
+	Dow       map[string]string
+	Nasdaq    map[string]string
+	Sp500     map[string]string
 	Tokyo     map[string]string
 	HongKong  map[string]string
 	London    map[string]string
@@ -30,13 +24,12 @@ type Market struct {
 	Yen       map[string]string
 	Euro      map[string]string
 	Gold      map[string]string
-	errors    string // Error(s), if any.
-	url       string // URL with symbols to fetch data
-	cookies   string // cookies for auth
-	crumb     string // crumb for the cookies, to be applied as a query param
+	errors    string
+	url       string
+	cookies   string
+	crumb     string
 }
 
-// Returns new initialized Market struct.
 func NewMarket() *Market {
 	market := &Market{}
 	market.IsClosed = false
@@ -63,11 +56,8 @@ func NewMarket() *Market {
 
 	return market
 }
-
-// Fetch downloads HTML page from the 'marketURL', parses it, and stores resulting data
-// in internal hashes. If download or data parsing fails Fetch populates 'market.errors'.
 func (market *Market) Fetch() (self *Market) {
-	self = market // <-- This ensures we return correct market after recover() from panic().
+	self = market
 	defer func() {
 		if err := recover(); err != nil {
 			market.errors = fmt.Sprintf("Error fetching market data...\n%s", err)
@@ -112,16 +102,12 @@ func (market *Market) Fetch() (self *Market) {
 	body = market.isMarketOpen(body)
 	return market.extract(body)
 }
-
-// Ok returns two values: 1) boolean indicating whether the error has occurred,
-// and 2) the error text itself.
 func (market *Market) Ok() (bool, string) {
 	return market.errors == ``, market.errors
 }
 
 // -----------------------------------------------------------------------------
 func (market *Market) isMarketOpen(body []byte) []byte {
-	// TBD -- CNN page doesn't seem to have market open/close indicator.
 	return body
 }
 

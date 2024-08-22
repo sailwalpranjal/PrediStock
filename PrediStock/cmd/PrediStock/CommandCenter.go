@@ -1,7 +1,3 @@
-// Copyright (c) 2013-2024 by Michael Dvorkin and contributors. All Rights Reserved.
-// Use of this source code is governed by a MIT-style license that can
-// be found in the LICENSE file.
-
 package main
 
 import (
@@ -18,12 +14,9 @@ import (
 	"github.com/nsf/termbox-go"
 )
 
-// File name in user's home directory where we store the settings.
 const defaultProfile = `.moprc`
 
-const help = `Mop v1.0.0 -- Copyright (c) 2013-2023 by Michael Dvorkin and contributors. All Rights Reserved.
-NO WARRANTIES OF ANY KIND WHATSOEVER. SEE THE LICENSE FILE FOR DETAILS.
-
+const help = `
 <u>Command</u>    <u>Description                                </u>
    +                  Add stocks to list
    -                  Remove stocks from list
@@ -50,10 +43,7 @@ Enter comma-delimited list of stock tickers when prompted.
 func mainLoop(screen *mop.Screen, profile *mop.Profile) {
 	var lineEditor *mop.LineEditor
 	var columnEditor *mop.ColumnEditor
-
 	termbox.SetInputMode(termbox.InputMouse)
-
-	// use buffered channel for keyboard event queue
 	keyboardQueue := make(chan termbox.Event, 128)
 
 	timestampQueue := time.NewTicker(1 * time.Second)
@@ -147,12 +137,8 @@ loop:
 			case termbox.EventResize:
 				screen.Resize()
 				if !showingHelp {
-					//screen.Draw(market)
-					//redrawQuotesFlag = true
-					//screen.Draw(market)
 					redrawQuotesFlag = true
 					redrawMarketFlag = true
-					//screen.DrawOldQuotes(quotes)
 				} else {
 					screen.Draw(help)
 				}
@@ -210,9 +196,6 @@ func main() {
 	profile, err := mop.NewProfile(*profileName)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "The profile read from `%s` is corrupted.\n\tError: %s\n\n", *profileName, err)
-
-		// Loop until we get a "y" or "n" answer.
-		// Note: This is only for the interactive mode. Once we have the "one-shot", this should be skipped
 		for {
 			fmt.Fprintln(os.Stderr, "Do you want to overwrite the current profile with the default one? [y/n]")
 			rne, _, _ := keyboard.GetSingleKey()
