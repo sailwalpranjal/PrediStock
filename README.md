@@ -66,4 +66,5 @@ This project is licensed under the [MIT License](LICENSE).
 
 For any inquiries or issues, please open an issue on the [GitHub repository](https://github.com/sailwalpranjal/PrediStock/issues).
 
+# Note: This project is not my original creation. It is a learning exercise developed using another project to gain hands-on experience with Golang.
 ---
