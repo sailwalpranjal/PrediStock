@@ -177,7 +177,12 @@ func (layout *Layout) pad(str string, width int) string {
 	return fmt.Sprintf(`%*s`, width, str)
 }
 
-// -----------------------------------------------------------------------------
+/*
+This function creates and returns a `*template.Template` for rendering a market report. 
+The template displays stock market data (e.g., Dow, S&P 500, NASDAQ), financial indicators (e.g., Yield, Euro, Yen), and commodities (e.g., Oil, Gold). 
+It optionally shows "U.S. markets closed" if the `IsClosed` flag is true.
+*/
+
 func buildMarketTemplate() *template.Template {
 	markup := `<tag>Dow</> {{.Dow.change}} ({{.Dow.percent}}) at {{.Dow.latest}} <tag>S&P 500</> {{.Sp500.change}} ({{.Sp500.percent}}) at {{.Sp500.latest}} <tag>NASDAQ</> {{.Nasdaq.change}} ({{.Nasdaq.percent}}) at {{.Nasdaq.latest}}
 <tag>Tokyo</> {{.Tokyo.change}} ({{.Tokyo.percent}}) at {{.Tokyo.latest}} <tag>HK</> {{.HongKong.change}} ({{.HongKong.percent}}) at {{.HongKong.latest}} <tag>London</> {{.London.change}} ({{.London.percent}}) at {{.London.latest}} <tag>Frankfurt</> {{.Frankfurt.change}} ({{.Frankfurt.percent}}) at {{.Frankfurt.latest}} {{if .IsClosed}}<right>U.S. markets closed</right>{{end}}

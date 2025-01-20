@@ -39,7 +39,7 @@ Enter comma-delimited list of stock tickers when prompted.
 <r> Press any key to continue </r>
 `
 
-// -----------------------------------------------------------------------------
+// The mainLoop method is responsible for initiating the event loop in a terminal-based application, managing user input through keyboard and mouse and periodically updating data. The profile's intervals for updating market data, quotes, and timestamps are specified by the timers. Screen rendering, market and quote data generation, as well as asynchronous keyboard input in sane goroutine are also handled by the function. Flags are employed to manage display actions like offering help or halting updates.either way.
 func mainLoop(screen *mop.Screen, profile *mop.Profile) {
 	var lineEditor *mop.LineEditor
 	var columnEditor *mop.ColumnEditor
@@ -67,6 +67,7 @@ func mainLoop(screen *mop.Screen, profile *mop.Profile) {
 	screen.Draw(market)
 	screen.Draw(quotes)
 
+// It listens for keyboard input, changes in screen size and the use of mouse movements; events are then looped through. It performs certain actions, such as opening editors, visibility of timestamps, pausing, or going through quotes and market data. However, it does not provide specific commands for this. The editor's input is handled by the active editor, but it can also update the screen at specific intervals using timers, updating quotes and market data. The loop is responsible for handling terminal resizing and scrolling events with the mouse. By taking into account flags and user interactions, the screen is redrawn when necessary, while still adhering to the progress bars and help state.
 loop:
 	for {
 		select {
@@ -183,7 +184,7 @@ loop:
 	}
 }
 
-// -----------------------------------------------------------------------------
+// The `main` function initializes the application by loading the user profile from the specified path, defaulting to the home directory if not provided. It first checks if the profile exists and is valid, and if not, prompts the user to overwrite the corrupted profile with a default one. After successfully loading or initializing the profile, it creates a new screen object and enters the main event loop (`mainLoop`) to start the application. Upon exiting the event loop, the profile is saved to ensure any changes are persisted. If an error occurs during any step, the program will handle it by either panicking or prompting the user for input.
 func main() {
 	usr, err := user.Current()
 	if err != nil {

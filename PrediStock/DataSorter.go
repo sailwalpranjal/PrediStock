@@ -1,5 +1,20 @@
 package mop
 
+/*
+The code defines a sorting system for stock data based on multiple attributes (e.g., ticker, last trade, change, volume, market cap, etc.). 
+It supports both ascending and descending sorting orders, and the sorting criteria are driven by the profile's configuration.
+
+- `Sorter` struct: Manages sorting behavior by interacting with the `Profile`.
+- `sortable` type: Defines the list of stocks to be sorted.
+- Sorting types (e.g., `byTickerAsc`, `byVolumeDesc`): Each represents a sorting criterion (ascending or descending) for different stock attributes.
+- Sorting functions (`Less`): Compare stock attributes for sorting in the desired order (either ascending or descending).
+- `NewSorter`: Initializes the `Sorter` with the user's profile settings.
+- `SortByCurrentColumn`: Applies the appropriate sorting strategy based on the current profile settings (ascending/descending).
+- Helper functions:
+  - `c`: Converts and normalizes string values (e.g., percentage or monetary values).
+  - `m`: Converts string representations of values with multipliers (K, M, B, T) into numerical values.
+*/
+
 import (
 	"sort"
 	"strconv"

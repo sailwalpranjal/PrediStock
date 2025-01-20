@@ -8,12 +8,18 @@ import (
 	"strconv"
 	"strings"
 )
-
+/*
+These constants define URLs and a user-agent for interacting with Yahoo Finance:  
+- `crumbURL`: URL to fetch a crumb for requests.  
+- `cookieURL`: URL to retrieve cookies for authentication.  
+- `userAgent`: User-agent string for identifying the client .  
+- `euConsentURL`: URL for collecting user consent with a session ID.
+*/
 const crumbURL = "https://query1.finance.yahoo.com/v1/test/getcrumb"
 const cookieURL = "https://finance.yahoo.com/"
 const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/113.0"
 const euConsentURL = "https://consent.yahoo.com/v2/collectConsent?sessionId="
-
+// This function fetches a crumb (a specific piece of data) from a remote server. It sends an HTTP GET request to the `crumbURL` with custom headers, including cookies for authentication. The response body is read and returned as a string. If any error occurs during the request or reading the response, the function panics.
 func fetchCrumb(cookies string) string {
 	client := http.Client{}
 	request, err := http.NewRequest("GET", crumbURL, nil)
@@ -49,7 +55,7 @@ func fetchCrumb(cookies string) string {
 
 	return string(body[:])
 }
-
+// This function fetches the necessary cookies for making requests to Yahoo Finance. It first sends a GET request to `cookieURL` with specified headers, extracts a session ID and CSRF token from the response, and uses them to send a POST request to consent Yahoo's terms. It then retrieves and processes cookies from the second response, specifically looking for an A1 cookie. If the A1 cookie is found, it is returned; otherwise, the function panics.
 func fetchCookies() string {
 
 	client := http.Client{}
@@ -143,7 +149,8 @@ func fetchCookies() string {
 		panic(err)
 	}
 }
-
+// This function checks the provided cookies for one with the name "A1". If found, it returns the "A1" cookie in the format `Name=Value;`. If the "A1" cookie is not present, it returns an empty string.
+// The "A1" cookie is a session or authentication cookie used by a web service - Yahoo Finance
 func getA1Cookie(cookies []*http.Cookie) string {
 	for _, cookie := range cookies {
 		if cookie.Name == "A1" {
