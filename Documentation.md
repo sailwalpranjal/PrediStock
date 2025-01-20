@@ -36,6 +36,8 @@ The architecture of PrediStock is designed to be modular and scalable, consistin
 - **Prediction Layer:** Implements machine learning models to predict stock prices.
 - **Output Layer:** Displays the results in a user-friendly format, such as graphs or tables.
 
+![PrediStock Flowchart](https://github.com/sailwalpranjal/PrediStock/blob/main/Building%20and%20Running%20PrediStock/FlowChart.jpeg)
+
 ## Installation
 
 To install and set up PrediStock, follow these steps:
